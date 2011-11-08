@@ -2,10 +2,10 @@ from pyfirmata import DuinoBot, util
 
 
 class N6:
-    board=DuinoBot('/dev/ttyUSB0')
 
-    def __init__(self):
-
+    def __init__(self, device='/dev/ttyUSB0'):
+        '''Inicializa el dispositivo de conexion con el robot'''
+        self.board = DuinoBot(device)
         it = util.Iterator(self.board)
         it.start()
         self.board.pass_time(0.1)
@@ -56,7 +56,7 @@ class N6:
             if duration==0:
                 self.board.send_sysex(5,[hi, lo])
             else:
-                self.board.send_sysex(5,[hi, lo, int(duration0)])
+                self.board.send_sysex(5,[hi, lo, int(duration*1000)])
                 #self.board.pass_time(duration)
 
         else:
@@ -84,11 +84,16 @@ class N6:
         else:
             return False
 
+    def battery(self):
+        self.board.send_sysex(6,[6, 1])
+        self.board.pass_time(0.02)
+        return self.board.analog_value*5.0/1024
+
     def sensors(self):
         '''Imprime informacion de los sensores.'''
         print 'Line1 = ' + str(self.analog(18))
         print 'Line2 = ' + str(self.analog(19))
         print 'Obstaculo mas cercano = ' + str(self.ping()) + ' cm.'
         print 'Pontenciometro = ' + str(self.analog(15))
-        print 'Bateria = ???'
+        print 'Bateria = ' + str(self.battery()) + ' v.'
 
